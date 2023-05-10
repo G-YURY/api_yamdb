@@ -9,7 +9,6 @@ class Title(models.Model):
     year = models.IntegerField(
         verbose_name='Дата выхода',
         blank=True,
-        null=True
     )
     description = models.TextField(
         verbose_name='Описание',
@@ -24,7 +23,7 @@ class Title(models.Model):
         verbose_name='Категория',
         on_delete=models.SET_NULL,
         related_name='titles',
-        null=True
+        blank=True
     )
 
     class Meta:
