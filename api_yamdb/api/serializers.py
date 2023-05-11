@@ -2,6 +2,8 @@ from users.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from reviews.models import Genre
+
 
 class UserSerializer(serializers.ModelSerializer):
     # password = serializers.HiddenField(default='system')
@@ -50,3 +52,11 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'role',)
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
+        lookup_field = 'slug'
+        pass
