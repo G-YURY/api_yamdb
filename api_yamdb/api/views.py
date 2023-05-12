@@ -49,4 +49,5 @@ class UserCreateView(ListCreateAPIView):
 
 class TitleViewSet():
     """Получить список всех объектов"""
+    serializer_class = TitleSerializer
     pass
