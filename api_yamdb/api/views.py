@@ -7,10 +7,12 @@ from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from api.filters import TitlesFilter
+from reviews.models import Title
 from .permissions import IsAuthorActionsOrReadOnly
 from .serializers import (RegistrationSerializer,
                           UserSerializer,
-                          TitleSerializer)
+                          TitleSerializer,
+                          TitleReadSerializer)
 from users.models import User
 
 
@@ -50,8 +52,14 @@ class UserCreateView(ListCreateAPIView):
 
 
 class TitleViewSet():
-    # queryset =
+    # что то мне подсказывает что кверисет должен быть другой
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
     # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
-    filter_backends = (DjangoFilterBackend)
+    filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
+
+    def get_serializer_class(self):
+        if self.action == 'list' or 'retrieve':
+            return TitleReadSerializer
+        return TitleSerializer
