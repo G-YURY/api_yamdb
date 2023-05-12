@@ -62,7 +62,8 @@ class Title(models.Model):
         verbose_name='Категория',
         on_delete=models.SET_NULL,
         related_name='titles',
-        blank=True
+        blank=True,
+        null=True
     )
 
     class Meta:
