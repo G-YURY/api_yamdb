@@ -1,4 +1,3 @@
-import datetime as dt
 from users.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -63,4 +62,16 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    rating = serializers.IntegerField()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category')
