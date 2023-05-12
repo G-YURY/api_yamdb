@@ -6,11 +6,19 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
+from api.filters import TitlesFilter
+from reviews.models import Title
 from .permissions import IsAuthorActionsOrReadOnly
-from .serializers import RegistrationSerializer, UserSerializer
+
+from .serializers import (RegistrationSerializer,
+                          UserSerializer,
+                          TitleSerializer,
+                          TitleReadSerializer)
 from .serializers import ReviewSerializer, CommentSerializer
 from .pagination import ReviewsPagination
+
 from users.models import User
 from reviews.models import Title, Review
 
@@ -50,6 +58,20 @@ class UserCreateView(ListCreateAPIView):
         serializer.save(password='system', role=confirmation_code)
 
 
+class TitleViewSet():
+    # что то мне подсказывает что кверисет должен быть другой
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitlesFilter
+
+    def get_serializer_class(self):
+        if self.action == 'list' or 'retrieve':
+            return TitleReadSerializer
+        return TitleSerializer
+
+      
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = ReviewsPagination
