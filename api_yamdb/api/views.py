@@ -56,7 +56,6 @@ class UserCreateView(ListCreateAPIView):
         send_code(self.request.data['email'], confirmation_code)
 
 
-# class TokenCreateView(TokenObtainPairView):
 class TokenCreateView(APIView):
     permission_classes = (AllowAny,)
 
