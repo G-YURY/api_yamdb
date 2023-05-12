@@ -1,6 +1,9 @@
 from users.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.relations import SlugRelatedField
+
+from reviews.models import Review, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,3 +53,26 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'role',)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'score', 'pub_date',)
+        model = Review
+
+    def validate_score(self, value):
+        if not (1 < value < 10):
+            raise serializers.ValidationError(
+                'Введите число рейтинга от 1 до 10!'
+            )
+        return value
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(read_only=True, slug_field='username')
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
