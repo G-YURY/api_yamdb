@@ -6,11 +6,16 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from api.filters import TitlesFilter
 from reviews.models import Title
 from .permissions import IsAuthorActionsOrReadOnly
+from .serializers import CategorySerializer
+from users.models import User
+from reviews.models import Category
+from api.mixins import CreateListDestroyViewSet
 
 from .serializers import (RegistrationSerializer,
                           UserSerializer,
@@ -56,6 +61,16 @@ class UserCreateView(ListCreateAPIView):
         print(confirmation_code)
         send_code(self.request.data['email'], confirmation_code)
         serializer.save(password='system', role=confirmation_code)
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    """Получить список всех категорий. Доступно без токена"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
+    filter_backends = (SearchFilter, )
+    search_fields = ('name', )
+    lookup_field = 'slug'
 
 
 class TitleViewSet():

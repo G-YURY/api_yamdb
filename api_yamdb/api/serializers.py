@@ -7,6 +7,8 @@ from reviews.models import Review, Comment
 
 from reviews.models import Category, Genre, Title
 
+from reviews.models import Category
+
 
 class UserSerializer(serializers.ModelSerializer):
     # password = serializers.HiddenField(default='system')
@@ -55,6 +57,14 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'role',)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+        lookup_field = 'slug'
+        pass
 
 
 class TitleSerializer(serializers.ModelSerializer):

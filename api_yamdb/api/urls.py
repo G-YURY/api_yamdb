@@ -1,15 +1,15 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from api.views import UserViewSet, UserCreateView, TitleViewSet
-from rest_framework_simplejwt.views import (TokenObtainPairView,
-                                            TokenRefreshView)
+from api.views import UserViewSet, UserCreateView, CategoryViewSet, TitleViewSet
+
 from .views import ReviewViewSet, CommentViewSet
 
 
 router_v1 = routers.DefaultRouter()
 
 router_v1.register('users', UserViewSet, basename='users')
+router_v1.register('categories', CategoryViewSet, basename='categories')
 
 router_v1.register('titles', TitleViewSet, basename='titles')
 
