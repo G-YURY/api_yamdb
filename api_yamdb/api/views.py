@@ -4,7 +4,9 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
+from api.filters import TitlesFilter
 from .permissions import IsAuthorActionsOrReadOnly
 from .serializers import (RegistrationSerializer,
                           UserSerializer,
@@ -48,7 +50,8 @@ class UserCreateView(ListCreateAPIView):
 
 
 class TitleViewSet():
-    """Получить список всех объектов"""
+    # queryset =
     serializer_class = TitleSerializer
     # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
-    pass
+    filter_backends = (DjangoFilterBackend)
+    filterset_class = TitlesFilter
