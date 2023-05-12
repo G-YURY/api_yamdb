@@ -1,7 +1,9 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from api.views import UserViewSet, UserCreateView, GenreViewSet
+from api.views import UserViewSet, UserCreateView, TokenCreateView
+
+from api.views import GenreViewSet
 
 from api.views import CategoryViewSet, TitleViewSet
 
@@ -32,12 +34,12 @@ urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path(
         'v1/auth/token/',
-        TokenObtainPairView.as_view(),
-        name='token_obtain_pair'
+        TokenCreateView.as_view(),
+        name='token'
     ),
     path(
         'v1/auth/signup/',
         UserCreateView.as_view(),
-        name='token_obtain_pair'
+        name='signup'
     ),
 ]

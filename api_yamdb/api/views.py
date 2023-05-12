@@ -1,10 +1,15 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter
 
@@ -13,10 +18,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import TitlesFilter
 from reviews.models import Title
 from .permissions import IsAuthorActionsOrReadOnly
+from .serializers import (TokenSerializer, UserRegistrationSerializer,
+                          UserSerializer)
 
 from reviews.models import Genre
 from .serializers import CategorySerializer
-from users.models import User
 from reviews.models import Category
 from api.mixins import CreateListDestroyViewSet
 
@@ -35,7 +41,7 @@ from reviews.models import Title, Review
 def send_code(email, confirmation_code):
     subject = 'Your confirmation code'
     send_mail(
-        subject, confirmation_code, 'admin@yamdb.ru', ['user4@example.com', ],
+        subject, confirmation_code, 'admin@yamdb.ru', [email, ],
     )
 
 
@@ -54,17 +60,60 @@ class UserViewSet(ModelViewSet):
 
 class UserCreateView(ListCreateAPIView):
     queryset = User.objects.all()
-    serializer_class = RegistrationSerializer
+    serializer_class = UserRegistrationSerializer
     permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
+        try:
+            _email = User.objects.get(email=self.request.data['email'])
+            _field_name = 'email'
+        except ObjectDoesNotExist:
+            _email = None
+
+        try:
+            _username = User.objects.get(
+                username=self.request.data['username'])
+            _field_name = 'username'
+        except ObjectDoesNotExist:
+            _username = None
+
+        if not _email == _username:
+            _field = _email or _username
+            message = {
+                f'{_field_name}': f'{_field}'
+            }
+            raise ValidationError(message)
+
+        try:
+            _user = User.objects.get(
+                email=self.request.data['email'],
+                username=self.request.data['username']
+            )
+        except ObjectDoesNotExist:
+            _user = None
+
         confirmation_code = get_random_string(
             length=5,
             allowed_chars='0123456789'
         )
-        print(confirmation_code)
+        data = {'code': confirmation_code}
+        if not _user:
+            serializer.save(code=confirmation_code)
+        else:
+            serializer.update(_user, data)
+
         send_code(self.request.data['email'], confirmation_code)
-        serializer.save(password='system', role=confirmation_code)
+
+
+class TokenCreateView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, format=None):
+        serializer = TokenSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GenreViewSet(CreateListDestroyViewSet):

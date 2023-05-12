@@ -43,6 +43,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=256, verbose_name='Название произведения')),
+                ('year', models.IntegerField(blank=True, verbose_name='Дата выхода')),
+                ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
+                ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='titles', to='reviews.category', verbose_name='Категория')),
                 ('year', models.IntegerField(blank=True, validators=[reviews.validators.validate_year], verbose_name='Дата выхода')),
                 ('year', models.IntegerField(blank=True, verbose_name='Дата выхода')),
                 ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
