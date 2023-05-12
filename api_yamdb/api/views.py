@@ -6,7 +6,9 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
 
 from .permissions import IsAuthorActionsOrReadOnly
-from .serializers import RegistrationSerializer, UserSerializer
+from .serializers import (RegistrationSerializer,
+                          UserSerializer,
+                          TitleSerializer)
 from users.models import User
 
 
@@ -43,3 +45,8 @@ class UserCreateView(ListCreateAPIView):
         print(confirmation_code)
         send_code(self.request.data['email'], confirmation_code)
         serializer.save(password='system', role=confirmation_code)
+
+
+class TitleViewSet():
+    """Получить список всех объектов"""
+    pass

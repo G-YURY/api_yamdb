@@ -1,6 +1,8 @@
 from django.db import models
 from users.models import User
 
+from reviews.validators import validate_year
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -47,6 +49,7 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         verbose_name='Дата выхода',
+        validators=[validate_year],
         blank=True,
     )
     description = models.TextField(
@@ -62,7 +65,8 @@ class Title(models.Model):
         verbose_name='Категория',
         on_delete=models.SET_NULL,
         related_name='titles',
-        blank=True
+        blank=True,
+        null=True
     )
 
     class Meta:
