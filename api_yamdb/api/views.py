@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Avg
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
@@ -124,9 +125,8 @@ class CategoryViewSet(CreateListDestroyViewSet):
     lookup_field = 'slug'
 
 
-class TitleViewSet(ModelViewSet):
-    # что то мне подсказывает что кверисет должен быть другой
-    queryset = Title.objects.all()
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all().annotate(Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend, )
