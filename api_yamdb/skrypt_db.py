@@ -29,14 +29,6 @@ with open('titles.csv') as csvfile:
         p.save()
 
 
-# GenreTitle
-with open('genre_title.csv') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        p = GenreTitle(id=row['id'], title=Title.objects.get(id=row['title_id']), genre=Genre.objects.get(id=row['genre_id']))
-	p.save()
-
-
 # Review
 with open('review.csv') as csvfile:
     reader = csv.DictReader(csvfile)
