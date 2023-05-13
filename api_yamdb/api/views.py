@@ -126,7 +126,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(Avg("reviews__score"))
+    queryset = Title.objects.all().annotate(Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend, )
