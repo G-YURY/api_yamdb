@@ -1,41 +1,29 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from django.utils.crypto import get_random_string
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.filters import SearchFilter
 
-from django_filters.rest_framework import DjangoFilterBackend
-
-from api.filters import TitlesFilter
-from reviews.models import Title
-from .permissions import IsAuthorActionsOrReadOnly
-from .serializers import (TokenSerializer, UserRegistrationSerializer,
-                          UserSerializer)
-
-from reviews.models import Genre
-from .serializers import CategorySerializer
-from reviews.models import Category
-from api.mixins import CreateListDestroyViewSet
-
-from .serializers import (RegistrationSerializer,
-                          UserSerializer,
-                          TitleSerializer,
-                          TitleReadSerializer,
-                          GenreSerializer)
-from .serializers import ReviewSerializer, CommentSerializer
 from .pagination import ReviewsPagination
-
+from .permissions import IsAuthorActionsOrReadOnly
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
+                          TitleReadSerializer, TitleSerializer,
+                          TokenSerializer, UserRegistrationSerializer,
+                          UserSerializer)
+from api.filters import TitlesFilter
+from api.mixins import CreateListDestroyViewSet
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from reviews.models import Title, Review
 
 
 def send_code(email, confirmation_code):
@@ -120,7 +108,7 @@ class GenreViewSet(CreateListDestroyViewSet):
     """Получить список всех жанров. Доступно без токена"""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
+    permission_classes = (AllowAny,)
     filter_backends = (SearchFilter,)
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -130,17 +118,17 @@ class CategoryViewSet(CreateListDestroyViewSet):
     """Получить список всех категорий. Доступно без токена"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
+    permission_classes = (AllowAny,)
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
 
 
-class TitleViewSet():
+class TitleViewSet(ModelViewSet):
     # что то мне подсказывает что кверисет должен быть другой
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    # permission_classes = (ТОЛЬКОАДМИН ИЛИ ЧТЕНИЕ)
+    permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
 
@@ -149,7 +137,7 @@ class TitleViewSet():
             return TitleReadSerializer
         return TitleSerializer
 
-      
+
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = ReviewsPagination
