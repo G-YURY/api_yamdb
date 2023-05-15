@@ -9,14 +9,15 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from .pagination import ReviewsPagination
-from .permissions import (IsAdminRole, IsAuthorActionsOrReadOnly,
-                          IsModeratorRole, IsUserRole)
+from .pagination import ReviewsPagination, UsersPagination
+from .permissions import (IsAdminRole, IsAuthorIsAllRoles, IsAnyIsAdmin,
+                          IsAuthorActionsOrReadOnly, IsModeratorRole,
+                          IsUserRole)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
@@ -33,12 +34,6 @@ def send_code(email, confirmation_code):
     send_mail(
         subject, confirmation_code, 'admin@yamdb.ru', [email, ],
     )
-
-
-class UsersPagination(PageNumberPagination):
-    page_size = 100
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
 
 
 class UserViewSet(ModelViewSet):
@@ -105,7 +100,7 @@ class UserCreateView(ListCreateAPIView):
             length=5,
             allowed_chars='0123456789'
         )
-        data = {'code': confirmation_code}
+        data = {'code': confirmation_code, 'role': 'user', }
         if not _user:
             serializer.save(code=confirmation_code)
         else:
@@ -129,7 +124,7 @@ class GenreViewSet(CreateListDestroyViewSet):
     """Получить список всех жанров. Доступно без токена"""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAnyIsAdmin,)
     filter_backends = (SearchFilter,)
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -139,7 +134,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
     """Получить список всех категорий. Доступно без токена"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAnyIsAdmin, )
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
@@ -148,7 +143,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(Avg('reviews__score'))
     serializer_class = TitleSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAnyIsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
 
@@ -161,7 +156,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = ReviewsPagination
-    permission_classes = IsAuthorActionsOrReadOnly
+    permission_classes = (IsAuthorIsAllRoles, )
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -169,6 +164,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
+        print(self.request.method)
         title_id = self.kwargs.get('title_id')
         serializer.save(author=self.request.user,
                         title=get_object_or_404(Title, pk=title_id)

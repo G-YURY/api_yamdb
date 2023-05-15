@@ -19,7 +19,7 @@ Content-Type: application/json
 
 {
   "username": "yury",
-  "confirmation_code": "28585"
+  "confirmation_code": "36504"
 }
 
 
@@ -38,17 +38,28 @@ GET http://127.0.0.1:8000/api/v1/categories/
 Content-Type: application/json
 
 ### ------------------------------------------------------------------------
+### /api/v1/categories/                       —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
 ### Добавление новой категории
-### Создать категорию. Права доступа: Администратор.
+### Создать категорию. Права доступа:                  ——— Администратор ———
 ### Поле slug каждой категории должно быть уникальным.
 POST http://127.0.0.1:8000/api/v1/categories/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+
+{
+    "name": "Фильм",
+    "slug": "mov"
+}
 
 ### ------------------------------------------------------------------------
+### /api/v1/categories/{slug}/                —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
 ### Удаление категории
-### Удалить категорию. Права доступа: Администратор.
-DELETE http://127.0.0.1:8000/api/v1/categories/{slug}/
+### Удалить категорию. Права доступа:                  ——— Администратор ———
+DELETE http://127.0.0.1:8000/api/v1/categories/movi/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
 
 
 
@@ -56,29 +67,41 @@ Content-Type: application/json
 ### /api/v1/genres/
 ### Категории жанров.
 ### ========================================================================
+### /api/v1/genres/
+### ------------------------------------------------------------------------
 ### Получение списка всех жанров
 ### Получить список всех жанров. Права доступа:  ——— Доступно без токена ———
 GET http://127.0.0.1:8000/api/v1/genres/
 Content-Type: application/json
 
 ### ------------------------------------------------------------------------
+### /api/v1/genres/                           —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
 ### Добавление жанра
 ### Добавить жанр. Права доступа:                      ——— Администратор ———
 ### Поле slug каждого жанра должно быть уникальным.
 POST http://127.0.0.1:8000/api/v1/genres/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
 
+{
+    "name": "Вестерн",
+    "slug": "wester"
+}
+### ------------------------------------------------------------------------
+### /api/v1/genres/{slug}/                    —>     jwt-token (write:admin)
 ### ------------------------------------------------------------------------
 ### Удаление жанра
 ### Удалить жанр. Права доступа:                       ——— Администратор ———
-DELETE http://127.0.0.1:8000/api/v1/genres/{slug}/
+DELETE http://127.0.0.1:8000/api/v1/genres/wester/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
 
 
 
 ### ========================================================================
 ### /api/v1/titles/
-### Произведения, к которым пишут отзывы (определённый фильм, книга или песенка).
+### Произведения, к которым пишут отзывы (определённый фильм, книга | песенка).
 ### ========================================================================
 ### Получение списка всех произведений
 ### Получить список всех объектов. Права доступа:——— Доступно без токена ———
@@ -120,32 +143,49 @@ Content-Type: application/json
 ### ========================================================================
 ### Получение списка всех отзывов
 ### Получить список всех отзывов. Права доступа: ——— Доступно без токена ———
-GET http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/
+GET http://127.0.0.1:8000/api/v1/titles/1/reviews/
 Content-Type: application/json
 
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/        —>     jwt-token (write:admin)
 ### ------------------------------------------------------------------------
 ### Добавление нового отзыва.
 ### Права доступа:                  ——— Аутентифицированные пользователи ———
 ### Добавить новый отзыв.
 ### Пользователь может оставить только один отзыв на произведение.
-POST http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/
+POST http://127.0.0.1:8000/api/v1/titles/1/reviews/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzNjQ3NjQyLCJqdGkiOiI2MDNhOTc2YjBlZDA0OGFjODRmOWQ3M2VlN2Y3ZWQzMCIsInVzZXJfaWQiOjV9.1zv0WL5ZJ8tzHIF-nA9K0CvlUlM8hE7UrpnrJJ_Hyik
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
 
+{
+  "text": "Positive review",
+  "score": 5
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/
 ### ------------------------------------------------------------------------
 ### Полуение отзыва по id.
 ### Права доступа:                               ——— Доступно без токена ———
 ### Получить отзыв по id для указанного произведения.
-GET http://127.0.0.1:8000/api/v1/titles/{titles_id}/reviews/{review_id}/
+GET http://127.0.0.1:8000/api/v1/titles/1/reviews/80/
 Content-Type: application/json
 
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/
 ### ------------------------------------------------------------------------
 ### Частичное обновление отзыва по id.
 ### Частично обновить отзыв по id. Права доступа:       ——— Автор отзыва ———
 ###                                                     ——— Модератор ———
 ###                                                     ——— Администратор ——
-PATCH http://127.0.0.1:8000/api/v1/titles/{titles_id}/reviews/{review_id}/
+PATCH http://127.0.0.1:8000/api/v1/titles/1/reviews/1/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDQ3MzM5LCJpYXQiOjE2ODQxODMzMzksImp0aSI6ImUwNTRkNmMzYjBiYjQ5NDQ5MjNlMTJlMTgxYzg3NjhlIiwidXNlcl9pZCI6MTA1fQ.8z6otVSreq1qsSdXW8mRk8BnwVaBFCCFrqw3vus5QY0
+
+{
+  "text": "Negative review1",
+  "score": 2
+}
 
 ### ------------------------------------------------------------------------
 ### Удаление отзыва по id.
