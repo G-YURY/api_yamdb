@@ -1,9 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Avg
+
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
-
 from users.models import User
 
 from rest_framework.relations import SlugRelatedField
@@ -96,9 +97,15 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
 
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, obj):
+        return int(round(
+            obj.reviews.all().aggregate(Avg('score'))['score__avg']
+        ))
+
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField()
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
 
@@ -106,6 +113,13 @@ class TitleReadSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
+
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, obj):
+        return int(round(
+            obj.reviews.all().aggregate(Avg('score'))['score__avg']
+        ))
 
 
 class ReviewSerializer(serializers.ModelSerializer):
