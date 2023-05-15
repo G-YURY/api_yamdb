@@ -8,8 +8,6 @@ from api.views import (CategoryViewSet, GenreViewSet, TitleViewSet,
 
 router_v1 = routers.DefaultRouter()
 
-router_v1.register(r'users', UserViewSet, basename='users')
-
 router_v1.register('genres', GenreViewSet, basename='genres')
 
 router_v1.register('categories', CategoryViewSet, basename='categories')
@@ -25,6 +23,10 @@ router_v1.register(
     basename='comments'
 )
 
+router_v1.register(r'users', UserViewSet, basename='users')
+# router_v1.register(r'me', UserMeViewSet.as_view(), basename='me')
+
+print(router_v1)
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
@@ -38,5 +40,5 @@ urlpatterns = [
         UserCreateView.as_view(),
         name='signup'
     ),
-    path('v1/user/me/', UserMeViewSet, name='me')
+    # path('v1/user/me/', UserMeViewSet.as_view(), name='me')
 ]

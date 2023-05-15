@@ -5,9 +5,10 @@ from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -48,22 +49,77 @@ class UserViewSet(ModelViewSet):
     pagination_class = UsersPagination
     lookup_field = 'username'
 
+    # def get_serializer_class(self):
+    #     if self.action == "retrieve":
+    #         return self.serializer_class
+    #     elif self.action == "post_author":
+    #         return PostAuthorSerializer
+    #     elif self.action == "all_post_author":
+    #         return PostAuthorSerializer
+    #     else:
+    #         return self.serializer_class
 
-class UserMeViewSet(RetrieveDestroyAPIView):
+    # def retrieve(self, request):
+    #     user = self.get_object()
+    #     serializer = self.get_serializer(user)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_object(self):
+        print('***get_object')
+        obj = self.request.user
+        print(obj.email)
+        return obj
+
+    @action(detail=True, methods=["get"], url_path=r'me',)
+    def me(self, request):
+        user = self.get_object()
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # @action(detail=False, methods=["get"], url_path=r'all-post-author',)
+    # def all_post_author(self, request):
+    #     post = Post.objects.all()
+    #     serializer = self.get_serializer(post, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserMeViewSet(RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AllowAny,)
+    # permission_classes = [IsModeratorRole | IsModeratorRole | IsUserRole]
     lookup_field = 'username'
 
-    # def get_object(self):
-    #     print('********************')
-    #     # queryset = self.get_queryset()
-    #     # filter = {}
-    #     # for field in self.multiple_lookup_fields:
-    #     #     filter[field] = self.kwargs[field]
-    #     obj = self.request.user
-    #     # self.check_object_permissions(self.request, obj)
-    #     return obj
+    @action(
+        methods=['get'], detail=True,
+        url_path='change-password', url_name='change_password')
+    def get_object(self):
+        print('***get_object')
+        obj = self.request.user
+        print(obj.email)
+        return obj
+
+    def get_queryset(self):
+        print('***get_queryset*** start')
+        return self.request.user.username.all()
+        print('***get_queryset*** finish')
+
+    # def get(self, request):
+    #     print('***get*** start')
+    #     print(self)
+    #     print(request)
+    #     print(self.retrieve(request))
+    #     print('***get*** finish')
+    #     return self.retrieve(request)
+
+    # def put(self, request, *args, **kwargs):
+    #     print('***put')
+    #     return self.update(request, *args, **kwargs)
+
+    # def patch(self, request):
+    #     print('***patch')
+    #     return self.partial_update(request)
+
+
 
 
 class UserCreateView(ListCreateAPIView):
