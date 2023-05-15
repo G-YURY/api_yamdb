@@ -1,4 +1,20 @@
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (SAFE_METHODS, BasePermission,
+                                        IsAuthenticatedOrReadOnly)
+
+
+class IsUserRole(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'user' or request.user.is_superuser
+
+
+class IsAdminRole(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'admin' or request.user.is_superuser
+
+
+class IsModeratorRole(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'moderator' or request.user.is_superuser
 
 
 class IsAuthorActionsOrReadOnly(IsAuthenticatedOrReadOnly):

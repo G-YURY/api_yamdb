@@ -1,13 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Avg
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -15,7 +15,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .pagination import ReviewsPagination
-from .permissions import IsAuthorActionsOrReadOnly
+from .permissions import (IsAdminRole, IsAuthorActionsOrReadOnly,
+                          IsModeratorRole, IsUserRole)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
@@ -45,6 +46,24 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
     pagination_class = UsersPagination
+    lookup_field = 'username'
+
+
+class UserMeViewSet(RetrieveDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = 'username'
+
+    # def get_object(self):
+    #     print('********************')
+    #     # queryset = self.get_queryset()
+    #     # filter = {}
+    #     # for field in self.multiple_lookup_fields:
+    #     #     filter[field] = self.kwargs[field]
+    #     obj = self.request.user
+    #     # self.check_object_permissions(self.request, obj)
+    #     return obj
 
 
 class UserCreateView(ListCreateAPIView):
@@ -54,22 +73,23 @@ class UserCreateView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         try:
-            _email = User.objects.get(email=self.request.data['email'])
-            _field_name = 'email'
+            _user_email = User.objects.get(email=self.request.data['email'])
+            _field_name_email = 'email'
         except ObjectDoesNotExist:
-            _email = None
+            _user_email = None
 
         try:
-            _username = User.objects.get(
+            _user_username = User.objects.get(
                 username=self.request.data['username'])
-            _field_name = 'username'
+            _field_name_username = 'username'
         except ObjectDoesNotExist:
-            _username = None
+            _user_username = None
 
-        if not _email == _username:
-            _field = _email or _username
+        if not _user_email == _user_username:
+            _field_name = _field_name_email or _field_name_username
+            _field = _user_email.email or _user_username.username
             message = {
-                f'{_field_name}': f'{_field}'
+                f'{_field_name}': f'{_field} - поля не совпадают.'
             }
             raise ValidationError(message)
 
@@ -97,7 +117,7 @@ class UserCreateView(ListCreateAPIView):
 class TokenCreateView(APIView):
     permission_classes = (AllowAny,)
 
-    def post(self, request, format=None):
+    def post(self, request):
         serializer = TokenSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
