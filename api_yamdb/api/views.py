@@ -138,6 +138,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
+    pagination_class = ReviewsPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -156,7 +157,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = ReviewsPagination
-    permission_classes = (IsAuthorIsAllRoles, )
+    permission_classes = (IsAuthorActionsOrReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -174,11 +175,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = ReviewsPagination
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthorActionsOrReadOnly,)
 
     def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
+        title = get_object_or_404(Title, pk=title_id)
+        queryset = title.reviews.all()
+        review = get_object_or_404(queryset, pk=review_id)
         return review.comments.all()
 
     def perform_create(self, serializer):
