@@ -1,13 +1,13 @@
 ### ==========================================================================
 ### AUTH — Регистрация пользователей и выдача токенов.
 ### ==========================================================================
-### Регистрация нового пользователя (ответ — HTTP/1.1 200 OK)
+### Регистрация нового пользователя (ответ — HTTP/1.1 200 OK)'|-|aTa|_|_|a'
 POST http://127.0.0.1:8000/api/v1/auth/signup/
 Content-Type: application/json
 
 {
-  "email": "superuser@mail.ru",
-  "username": "yury"
+  "email": "c6_ob@yamdb.fake",
+  "username": "c6"
 }
 
 ### ------------------------------------------------------------------------
@@ -18,11 +18,11 @@ POST http://127.0.0.1:8000/api/v1/auth/token/
 Content-Type: application/json
 
 {
-  "username": "yury",
-  "confirmation_code": "36504"
+  "username": "c1226",
+  "confirmation_code": "69783"
 }
 
-
+#eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTEwNzIxLCJpYXQiOjE2ODQyNDY3MjEsImp0aSI6IjUxMmQzZjYwMmRlZTQ0ZGJhZjY1OTNlNDU4OTg1M2JmIiwidXNlcl9pZCI6MTAxfQ.I5_sj_rAzot9E7oLxOcCXmnirkadi5gsINNkp6sroT0
 
 ### ========================================================================
 ### /api/v1/categories/
@@ -118,9 +118,11 @@ Content-Type: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzNjQ3NjQyLCJqdGkiOiI2MDNhOTc2YjBlZDA0OGFjODRmOWQ3M2VlN2Y3ZWQzMCIsInVzZXJfaWQiOjV9.1zv0WL5ZJ8tzHIF-nA9K0CvlUlM8hE7UrpnrJJ_Hyik
 
 ### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}
+### ------------------------------------------------------------------------
 ### Получение информации о произведении.
 ### Информация о произведении. Права доступа:    ——— Доступно без токена ———
-GET http://127.0.0.1:8000/api/v1/titles/{titles_id}/
+GET http://127.0.0.1:8000/api/v1/titles/1/
 Content-Type: application/json
 
 ### ------------------------------------------------------------------------
@@ -143,7 +145,7 @@ Content-Type: application/json
 ### ========================================================================
 ### Получение списка всех отзывов
 ### Получить список всех отзывов. Права доступа: ——— Доступно без токена ———
-GET http://127.0.0.1:8000/api/v1/titles/1/reviews/
+GET http://127.0.0.1:8000/api/v1/titles/23/reviews/
 Content-Type: application/json
 
 ### ------------------------------------------------------------------------
@@ -153,9 +155,9 @@ Content-Type: application/json
 ### Права доступа:                  ——— Аутентифицированные пользователи ———
 ### Добавить новый отзыв.
 ### Пользователь может оставить только один отзыв на произведение.
-POST http://127.0.0.1:8000/api/v1/titles/1/reviews/
+POST http://127.0.0.1:8000/api/v1/titles/5/reviews/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
 
 {
   "text": "Positive review",
@@ -168,7 +170,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Полуение отзыва по id.
 ### Права доступа:                               ——— Доступно без токена ———
 ### Получить отзыв по id для указанного произведения.
-GET http://127.0.0.1:8000/api/v1/titles/1/reviews/80/
+GET http://127.0.0.1:8000/api/v1/titles/23/reviews/58/
 Content-Type: application/json
 
 ### ------------------------------------------------------------------------
@@ -178,14 +180,19 @@ Content-Type: application/json
 ### Частично обновить отзыв по id. Права доступа:       ——— Автор отзыва ———
 ###                                                     ——— Модератор ———
 ###                                                     ——— Администратор ——
-PATCH http://127.0.0.1:8000/api/v1/titles/1/reviews/1/
+PATCH http://127.0.0.1:8000/api/v1/titles/23/reviews/58/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDQ3MzM5LCJpYXQiOjE2ODQxODMzMzksImp0aSI6ImUwNTRkNmMzYjBiYjQ5NDQ5MjNlMTJlMTgxYzg3NjhlIiwidXNlcl9pZCI6MTA1fQ.8z6otVSreq1qsSdXW8mRk8BnwVaBFCCFrqw3vus5QY0
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTEwNzIxLCJpYXQiOjE2ODQyNDY3MjEsImp0aSI6IjUxMmQzZjYwMmRlZTQ0ZGJhZjY1OTNlNDU4OTg1M2JmIiwidXNlcl9pZCI6MTAxfQ.I5_sj_rAzot9E7oLxOcCXmnirkadi5gsINNkp6sroT0
 
 {
-  "text": "Negative review1",
-  "score": 2
+  "text": "Изменение от capt_obvious(admin)",
+  "score": 7
 }
+
+
+
+
+
 
 ### ------------------------------------------------------------------------
 ### Удаление отзыва по id.
@@ -250,7 +257,7 @@ DELETE http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/commen
 Content-Type: application/json
 
 
-
+============================================================================
 ### ========================================================================
 ### /api/v1/users/
 ### Пользователи
@@ -261,7 +268,7 @@ Content-Type: application/json
 ### Получить список всех пользователей. Права доступа: ——— Администратор ———
 GET http://127.0.0.1:8000/api/v1/users/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDk5ODE0LCJpYXQiOjE2ODQyMzU4MTQsImp0aSI6IjZmYmU3MWQ5YzhkNTQ0NGU5YjQ1ZTk2ODNkMTgwZDExIiwidXNlcl9pZCI6MTAyfQ.JATbrbOXqmlOIVRSTmtT005XTNEPO7R6Iy2zU_R_-cE
 
 ### ------------------------------------------------------------------------
 ### /api/v1/users/                            —>     jwt-token (write:admin)
@@ -272,7 +279,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Поля email и username должны быть уникальными.
 POST http://127.0.0.1:8000/api/v1/users/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
 
 {
   "username": "solomon",
@@ -291,7 +298,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Получить пользователя по username.
 GET http://127.0.0.1:8000/api/v1/users/solomon/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
 
 ### ------------------------------------------------------------------------
 ### /api/v1/users/{username}/                 —>     jwt-token (write:admin)
@@ -302,7 +309,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Поля email и username должны быть уникальными.
 PATCH http://127.0.0.1:8000/api/v1/users/solomon/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
 
 {
   "username": "solomon",
@@ -321,7 +328,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Удалить пользователя по username.
 DELETE http://127.0.0.1:8000/api/v1/users/solomon/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
 
 ### ------------------------------------------------------------------------
 ### /api/v1/users/me/          —>     jwt-token (read:admin,moderator,user)

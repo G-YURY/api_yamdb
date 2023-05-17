@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -5,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -13,12 +15,15 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+
 from rest_framework.decorators import action
 from .pagination import ReviewsPagination, UsersPagination
 from .permissions import (IsAdminRole, IsAuthorIsAllRoles, IsAnyIsAdmin,
                           IsAuthorActionsOrReadOnly, IsModeratorRole,
                           IsUserRole,
                           IsAuthorActionOrAdminOrModeratorOrReadOnly)                        
+from rest_framework_simplejwt.tokens import AccessToken
+
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
@@ -30,17 +35,11 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
 
-def send_code(email, confirmation_code):
-    subject = 'Your confirmation code'
-    send_mail(
-        subject, confirmation_code, 'admin@yamdb.ru', [email, ],
-    )
-
-
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminRole,)
+    pagination_class = UsersPagination
     lookup_field = 'username'
 
 
@@ -60,63 +59,42 @@ class UserMeViewSet(RetrieveDestroyAPIView):
     #     return obj
 
 
-class UserCreateView(ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserRegistrationSerializer
+class UserCreateView(APIView):
     permission_classes = (AllowAny,)
 
-    def perform_create(self, serializer):
-        try:
-            _user_email = User.objects.get(email=self.request.data['email'])
-            _field_name_email = 'email'
-        except ObjectDoesNotExist:
-            _user_email = None
-
-        try:
-            _user_username = User.objects.get(
-                username=self.request.data['username'])
-            _field_name_username = 'username'
-        except ObjectDoesNotExist:
-            _user_username = None
-
-        if not _user_email == _user_username:
-            _field_name = _field_name_email or _field_name_username
-            _field = _user_email.email or _user_username.username
-            message = {
-                f'{_field_name}': f'{_field} - поля не совпадают.'
-            }
-            raise ValidationError(message)
-
-        try:
-            _user = User.objects.get(
-                email=self.request.data['email'],
-                username=self.request.data['username']
-            )
-        except ObjectDoesNotExist:
-            _user = None
-
-        confirmation_code = get_random_string(
-            length=5,
-            allowed_chars='0123456789'
-        )
-        data = {'code': confirmation_code}
-        if not _user:
-            serializer.save(code=confirmation_code)
-        else:
-            serializer.update(_user, data)
-
-        send_code(self.request.data['email'], confirmation_code)
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TokenCreateView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        serializer = TokenSerializer(data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        _username = serializer.data['username']
+        if not User.objects.filter(username=_username).exists():
+            raise NotFound('Такого значения поля в базе данных нет.')
+
+        _user = User.objects.get(username=_username)
+
+        _code = serializer.data['confirmation_code']
+        if not _user.confirmation_code == _code:
+            message = {'confirmation_code': f'{_code} — код не актуален.'}
+            raise ValidationError(message)
+        if _user.role:
+            _role = _user.role
+        else:
+            _role = 'user'
+        User.objects.filter(
+            username=_username).update(role=_role, confirmation_code='')
+        _token = str(AccessToken().for_user(_user))
+
+        return Response({'token': _token}, status=status.HTTP_200_OK)
 
 
 class GenreViewSet(CreateListDestroyViewSet):
