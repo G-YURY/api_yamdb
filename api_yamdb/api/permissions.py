@@ -1,6 +1,5 @@
 from rest_framework import permissions
-from rest_framework.permissions import (SAFE_METHODS, BasePermission,
-                                        IsAuthenticatedOrReadOnly,)
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsUserRole(BasePermission):
@@ -81,3 +80,13 @@ class IsAuthorActionOrAdminOrModeratorOrReadOnly(permissions.BasePermission):
                      or obj.author == request.user
                      or request.user.is_superuser
                      or request.user.is_staff))
+
+
+class IsUserEditOnlyPermission(permissions.BasePermission):
+    """Доступ к users/me только текущему пользователю."""
+
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        return (obj.id == request.user)

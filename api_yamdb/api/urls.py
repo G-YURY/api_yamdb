@@ -3,12 +3,12 @@ from rest_framework import routers
 
 from .views import CommentViewSet, ReviewViewSet
 from api.views import (CategoryViewSet, GenreViewSet, TitleViewSet,
-                       TokenCreateView, UserCreateView, UserMeViewSet,
+                       TokenCreateView, UserCreateView,
                        UserViewSet)
 
 router_v1 = routers.DefaultRouter()
 
-router_v1.register(r'users', UserViewSet, basename='users')
+router_v1.register('users', UserViewSet, basename='users')
 
 router_v1.register('genres', GenreViewSet, basename='genres')
 
@@ -38,5 +38,4 @@ urlpatterns = [
         UserCreateView.as_view(),
         name='signup'
     ),
-    # path('v1/user/me/', UserMeViewSet, name='me')
 ]
