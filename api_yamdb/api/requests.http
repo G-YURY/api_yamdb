@@ -1,0 +1,361 @@
+### ==========================================================================
+### AUTH — Регистрация пользователей и выдача токенов.
+### ==========================================================================
+### Регистрация нового пользователя (ответ — HTTP/1.1 200 OK)'|-|aTa|_|_|a'
+POST http://127.0.0.1:8000/api/v1/auth/signup/
+Content-Type: application/json
+
+{
+  "email": "capt_obvious@yamdb.fake",
+  "username": "capt_obvious"
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/auth/token/
+### ------------------------------------------------------------------------
+### Создать jwt-токен для пользователя с кодом (ответ — HTTP/1.1 200 OK)
+POST http://127.0.0.1:8000/api/v1/auth/token/
+Content-Type: application/json
+
+{
+  "username": "capt_obvious",
+  "confirmation_code": "52895"
+}
+
+# "username": "capt_obvious",
+# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ========================================================================
+### /api/v1/categories/
+### Категории (типы) произведений.
+### ========================================================================
+### ------------------------------------------------------------------------
+### /api/v1/categories/
+### ------------------------------------------------------------------------
+### Получение списка всех категорий
+### Права доступа:                               ——— Доступно без токена ———
+### Получить список всех категорий.
+GET http://127.0.0.1:8000/api/v1/categories/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/categories/                       —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Добавление новой категории
+### Создать категорию. Права доступа:                  ——— Администратор ———
+### Поле slug каждой категории должно быть уникальным.
+POST http://127.0.0.1:8000/api/v1/categories/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+
+{
+    "name": "Фильм",
+    "slug": "mov"
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/categories/{slug}/                —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Удаление категории
+### Удалить категорию. Права доступа:                  ——— Администратор ———
+DELETE http://127.0.0.1:8000/api/v1/categories/movi/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+
+
+
+### ========================================================================
+### /api/v1/genres/
+### Категории жанров.
+### ========================================================================
+### /api/v1/genres/
+### ------------------------------------------------------------------------
+### Получение списка всех жанров
+### Получить список всех жанров. Права доступа:  ——— Доступно без токена ———
+GET http://127.0.0.1:8000/api/v1/genres/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/genres/                           —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Добавление жанра
+### Добавить жанр. Права доступа:                      ——— Администратор ———
+### Поле slug каждого жанра должно быть уникальным.
+POST http://127.0.0.1:8000/api/v1/genres/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+
+{
+    "name": "Вестерн",
+    "slug": "wester"
+}
+### ------------------------------------------------------------------------
+### /api/v1/genres/{slug}/                    —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Удаление жанра
+### Удалить жанр. Права доступа:                       ——— Администратор ———
+DELETE http://127.0.0.1:8000/api/v1/genres/wester/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDM2MzE5LCJpYXQiOjE2ODQxNzIzMTksImp0aSI6ImNmNjhjODQ4YzA3NzRjNmQ4MTRjYzgzNDYxN2NkOWE0IiwidXNlcl9pZCI6MTA1fQ.9pHdKUKc-VWaW00n_OMFFkWZO1X2HMRXZVwXij2-Hys
+
+
+
+### ========================================================================
+### /api/v1/titles/
+### Произведения, к которым пишут отзывы (определённый фильм, книга | песенка).
+### ========================================================================
+### Получение списка всех произведений
+### Получить список всех объектов. Права доступа:——— Доступно без токена ———
+GET http://127.0.0.1:8000/api/v1/titles/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### Добавление произведения.
+### Добавить новое произведение. Права доступа:        ——— Администратор ———
+### Нельзя добавлять произведения, которые еще не вышли (год выпуска не может быть больше текущего).
+### При добавлении нового произведения требуется указать уже существующие категорию и жанр.
+POST http://127.0.0.1:8000/api/v1/titles/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzNjQ3NjQyLCJqdGkiOiI2MDNhOTc2YjBlZDA0OGFjODRmOWQ3M2VlN2Y3ZWQzMCIsInVzZXJfaWQiOjV9.1zv0WL5ZJ8tzHIF-nA9K0CvlUlM8hE7UrpnrJJ_Hyik
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}
+### ------------------------------------------------------------------------
+### Получение информации о произведении.
+### Информация о произведении. Права доступа:    ——— Доступно без токена ———
+GET http://127.0.0.1:8000/api/v1/titles/1/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### Частичное обновление информации о произведении.
+### Обновить информацию о произведении. Права доступа: ——— Администратор ———
+PATCH http://127.0.0.1:8000/api/v1/titles/{titles_id}/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+
+### Удаление произведения.
+### Удалить произведение. Права доступа:               ——— Администратор ———
+DELETE http://127.0.0.1:8000/api/v1/titles/{titles_id}/
+Content-Type: application/json
+
+===========================================================================
+### ========================================================================
+### /api/v1/titles/{title_id}/reviews/
+### Отзывы
+### ========================================================================
+### Получение списка всех отзывов
+### Получить список всех отзывов. Права доступа: ——— Доступно без токена ———
+GET http://127.0.0.1:8000/api/v1/titles/23/reviews/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/        —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Добавление нового отзыва.
+### Права доступа:                  ——— Аутентифицированные пользователи ———
+### Добавить новый отзыв.
+### Пользователь может оставить только один отзыв на произведение.
+POST http://127.0.0.1:8000/api/v1/titles/5/reviews/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDg3MzcxLCJpYXQiOjE2ODQyMjMzNzEsImp0aSI6IjJlOWMxZWY2MGQ4YjQ2NmE4NjY0MjUzMzdmYjdiNDk2IiwidXNlcl9pZCI6MTA2fQ.mWHblxWEEFYV07dKAIG31HebTFiWJYxBMYCCvChVuRg
+
+{
+  "text": "Positive review",
+  "score": 5
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/
+### ------------------------------------------------------------------------
+### Полуение отзыва по id.
+### Права доступа:                               ——— Доступно без токена ———
+### Получить отзыв по id для указанного произведения.
+GET http://127.0.0.1:8000/api/v1/titles/23/reviews/58/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/
+### ------------------------------------------------------------------------
+### Частичное обновление отзыва по id.
+### Частично обновить отзыв по id. Права доступа:       ——— Автор отзыва ———
+###                                                     ——— Модератор ———
+###                                                     ——— Администратор ——
+PATCH http://127.0.0.1:8000/api/v1/titles/23/reviews/58/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTEwNzIxLCJpYXQiOjE2ODQyNDY3MjEsImp0aSI6IjUxMmQzZjYwMmRlZTQ0ZGJhZjY1OTNlNDU4OTg1M2JmIiwidXNlcl9pZCI6MTAxfQ.I5_sj_rAzot9E7oLxOcCXmnirkadi5gsINNkp6sroT0
+
+{
+  "text": "Изменение от capt_obvious(admin)",
+  "score": 7
+}
+
+
+
+
+
+
+### ------------------------------------------------------------------------
+### Удаление отзыва по id.
+### Удалить отзыв по id. Права доступа:                 ——— Автор отзыва ———
+###                                                     ——— Модератор ———
+###                                                     ——— Администратор ——
+DELETE http://127.0.0.1:8000/api/v1/titles/{titles_id}/reviews/{review_id}/
+Content-Type: application/json
+
+
+
+### ========================================================================
+### /api/v1/titles/{title_id}/reviews/{review_id}/comments/
+### Комментарии к отзывам
+### ========================================================================
+### /api/v1/titles/{title_id}/reviews/{review_id}/comments/
+### ------------------------------------------------------------------------
+### Получение списка всех комментариев к отзыву
+### Получить список всех комментариев к отзыву по id.
+### Права доступа:                               ——— Доступно без токена ———
+GET http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/comments/
+### ------------------------------------------------------------------------
+### Добавление комментария к отзыву.
+### Права доступа:                  ——— Аутентифицированные пользователи ———
+### Добавить новый комментарий для отзыва.
+POST http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzNjQ3NjQyLCJqdGkiOiI2MDNhOTc2YjBlZDA0OGFjODRmOWQ3M2VlN2Y3ZWQzMCIsInVzZXJfaWQiOjV9.1zv0WL5ZJ8tzHIF-nA9K0CvlUlM8hE7UrpnrJJ_Hyik
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{titles_id}/reviews/{review_id}/comments/{comment_id}/
+### ------------------------------------------------------------------------
+### Получение комментария к отзыву.
+### Права доступа:                               ——— Доступно без токена ———
+### Получить комментарий для отзыва по id.
+GET http://127.0.0.1:8000/api/v1/titles/{titles_id}/reviews/{review_id}/comments/{comment_id}/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
+### ------------------------------------------------------------------------
+### Частичное обновление комментария к отзыву.
+### Частично обновить комментарий к отзыву по id.
+### Права доступа:                                      ——— Автор отзыва ———
+###                                                     ——— Модератор ———
+###                                                     ——— Администратор ——
+PATCH http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
+Content-Type: application/json
+
+### ------------------------------------------------------------------------
+### /api/v1/titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
+### ------------------------------------------------------------------------
+### Удаление комментария к отзыву.
+### Удалить комментарий к отзыву по id. Права доступа:  ——— Автор отзыва ———
+###                                                     ——— Модератор ———
+###                                                     ——— Администратор ——
+DELETE http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
+Content-Type: application/json
+
+
+============================================================================
+### ========================================================================
+### /api/v1/users/
+### Пользователи
+### ========================================================================
+### /api/v1/users/                             —>     jwt-token (read:admin)
+### ------------------------------------------------------------------------
+### Получение списка всех пользователей
+### Получить список всех пользователей. Права доступа: ——— Администратор ———
+GET http://127.0.0.1:8000/api/v1/users/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ------------------------------------------------------------------------
+### Поиск по полю <username>   api/v1/users/?search={<username>}
+GET http://127.0.0.1:8000/api/v1/users/?search=bingobongo
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ------------------------------------------------------------------------
+### /api/v1/users/                            —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Добавление пользователя.
+### Права доступа:                                     ——— Администратор ———
+### Добавить нового пользователя.
+### Поля email и username должны быть уникальными.
+POST http://127.0.0.1:8000/api/v1/users/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+{
+  "username": "solomon",
+  "email": "user@le.com",
+  "first_name": "Solomon",
+  "last_name": "Tor",
+  "bio": "string",
+  "role": "user"
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/users/{username}/                  —>     jwt-token (read:admin)
+### ------------------------------------------------------------------------
+### Получение пользователя по username.
+### Права доступа:                                     ——— Администратор ———
+### Получить пользователя по username.
+GET http://127.0.0.1:8000/api/v1/users/solomon/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ------------------------------------------------------------------------
+### /api/v1/users/{username}/                 —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Изменение данных пользователя по username.
+### Права доступа:                                     ——— Администратор ———
+### Изменить данные пользователя по username. 
+### Поля email и username должны быть уникальными.
+PATCH http://127.0.0.1:8000/api/v1/users/solomon/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+{
+  "username": "solomon",
+  "email": "user@le.com",
+  "first_name": "Solomon",
+  "last_name": "Tor",
+  "bio": "biography",
+  "role": "user"
+}
+
+### ------------------------------------------------------------------------
+### /api/v1/users/{username}/                  —>     jwt-token (write:admin)
+### ------------------------------------------------------------------------
+### Удаление пользователя по username.
+### Права доступа:                                     ——— Администратор ———
+### Удалить пользователя по username.
+DELETE http://127.0.0.1:8000/api/v1/users/solomon/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ------------------------------------------------------------------------
+### /api/v1/users/me/          —>     jwt-token (read:admin,moderator,user)
+### ------------------------------------------------------------------------
+### Получение данных своей учетной записи.
+### Права доступа:                 ——— Любой авторизованный пользователь ———
+### Получить данные своей учетной записи. 
+GET http://127.0.0.1:8000/api/v1/users/me/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ------------------------------------------------------------------------
+### /api/v1/users/me/          —>     jwt-token (write:admin,moderator,user)
+### ------------------------------------------------------------------------
+### Изменение данных своей учетной записи.
+### Права доступа:                 ——— Любой авторизованный пользователь ———
+### Изменить данные своей учетной записи . 
+### Поля email и username должны быть уникальными.
+PATCH http://127.0.0.1:8000/api/v1/users/me/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTk1NDkyLCJpYXQiOjE2ODQzMzE0OTIsImp0aSI6Ijk3NjdlOWVmZWUwNDRlODQ5MGM3M2Q0NmUxMzA5NTEwIiwidXNlcl9pZCI6MTAxfQ.sxNHnPfghQkxsNeNl8hJFln4yl52N4SfZCAceAJCzsc
+
+### ========================================================================
