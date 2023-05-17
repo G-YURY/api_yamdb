@@ -36,6 +36,8 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdminRole,)
     pagination_class = UsersPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('username', )
     lookup_field = 'username'
 
 
@@ -72,6 +74,12 @@ class TokenCreateView(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        is_bool = False
+        if not is_bool:
+            print('1')
+        else:
+            print('2')
 
         _username = serializer.data['username']
         if not User.objects.filter(username=_username).exists():
