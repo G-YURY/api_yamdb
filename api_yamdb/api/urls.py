@@ -38,5 +38,5 @@ urlpatterns = [
         UserCreateView.as_view(),
         name='signup'
     ),
-    path('v1/user/me/', UserMeViewSet, name='me')
+    path('v1/users/me/', UserMeViewSet, name='me')
 ]
