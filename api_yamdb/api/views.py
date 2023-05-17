@@ -44,6 +44,16 @@ class UserViewSet(ModelViewSet):
     search_fields = ('username', )
     lookup_field = 'username'
 
+    @action(methods=['GET', 'PATCH'], detail=False)
+    def me(self, request):
+        print(request.data)
+        _user = self.queryset.filter(username=request.user.username).first()
+        _serializer = UserSerializer(_user)
+        if request.method == 'PATCH':
+            
+
+        return Response(_serializer.data, status=status.HTTP_200_OK)
+
 
 class UserMeViewSet(RetrieveDestroyAPIView):
     queryset = User.objects.all()

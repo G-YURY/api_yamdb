@@ -19,11 +19,11 @@ Content-Type: application/json
 
 {
   "username": "capt_obvious",
-  "confirmation_code": "97837"
+  "confirmation_code": "59631"
 }
 
 # "username": "capt_obvious",
-# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTY4ODk2LCJpYXQiOjE2ODQzMDQ4OTYsImp0aSI6ImZlOTg4MmUzYjY3NzQ4MzI5Nzk0NjJmY2UzMmRiYzBhIiwidXNlcl9pZCI6MTAxfQ.30Q6HAZgBE9t1wDq1lKu8S1J6eYEj-tALIHRWfjMHYo
+# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTkwOTg2LCJpYXQiOjE2ODQzMjY5ODYsImp0aSI6Ijg1MDI3YjIzMTc5YjQ4YmQ5MzJhOWRlZTNhYjQwYzYyIiwidXNlcl9pZCI6MTAxfQ.d5_opRKl5jp9YyOC1aBfLH9RWGhZDatJCJfPiFrFJpw
 
 ### ========================================================================
 ### /api/v1/categories/
@@ -269,7 +269,7 @@ Content-Type: application/json
 ### Получить список всех пользователей. Права доступа: ——— Администратор ———
 GET http://127.0.0.1:8000/api/v1/users/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTY4ODk2LCJpYXQiOjE2ODQzMDQ4OTYsImp0aSI6ImZlOTg4MmUzYjY3NzQ4MzI5Nzk0NjJmY2UzMmRiYzBhIiwidXNlcl9pZCI6MTAxfQ.30Q6HAZgBE9t1wDq1lKu8S1J6eYEj-tALIHRWfjMHYo
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTkwOTg2LCJpYXQiOjE2ODQzMjY5ODYsImp0aSI6Ijg1MDI3YjIzMTc5YjQ4YmQ5MzJhOWRlZTNhYjQwYzYyIiwidXNlcl9pZCI6MTAxfQ.d5_opRKl5jp9YyOC1aBfLH9RWGhZDatJCJfPiFrFJpw
 
 ### ------------------------------------------------------------------------
 ### Поиск по полю <username>   api/v1/users/?search={<username>}
@@ -343,9 +343,9 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Получение данных своей учетной записи.
 ### Права доступа:                 ——— Любой авторизованный пользователь ———
 ### Получить данные своей учетной записи. 
-GET http://127.0.0.1:8000/api/v1/user/me/
+GET http://127.0.0.1:8000/api/v1/users/me/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg0Nzc4ODE2LCJpYXQiOjE2ODM5MTQ4MTYsImp0aSI6ImYwMjFjOTk3ZWZiOTRhOWI4ZWU2YmUwZDk1YjA1NTg0IiwidXNlcl9pZCI6MjB9.UWscDAYuFQsQdQPfRg9viItvK17UQFzCxcYrfAlDmms
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTkwOTg2LCJpYXQiOjE2ODQzMjY5ODYsImp0aSI6Ijg1MDI3YjIzMTc5YjQ4YmQ5MzJhOWRlZTNhYjQwYzYyIiwidXNlcl9pZCI6MTAxfQ.d5_opRKl5jp9YyOC1aBfLH9RWGhZDatJCJfPiFrFJpw
 
 ### ------------------------------------------------------------------------
 ### /api/v1/users/me/          —>     jwt-token (write:admin,moderator,user)
@@ -356,5 +356,14 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
 ### Поля email и username должны быть уникальными.
 PATCH http://127.0.0.1:8000/api/v1/users/me/
 Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTkwOTg2LCJpYXQiOjE2ODQzMjY5ODYsImp0aSI6Ijg1MDI3YjIzMTc5YjQ4YmQ5MzJhOWRlZTNhYjQwYzYyIiwidXNlcl9pZCI6MTAxfQ.d5_opRKl5jp9YyOC1aBfLH9RWGhZDatJCJfPiFrFJpw
 
+{
+  "username": "capt_obvious",
+  "email": "capt_bvious@yamdb.fake",
+  "first_name": "",
+  "last_name": "",
+  "bio": "",
+  "role": "admin"
+}
 ### ========================================================================
