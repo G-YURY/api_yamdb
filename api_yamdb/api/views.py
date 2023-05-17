@@ -78,12 +78,6 @@ class TokenCreateView(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        is_bool = False
-        if not is_bool:
-            print('1')
-        else:
-            print('2')
-
         _username = serializer.data['username']
         if not User.objects.filter(username=_username).exists():
             raise NotFound('Такого значения поля в базе данных нет.')
