@@ -1,32 +1,27 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
-from django.db.models import Avg
-from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK
 from rest_framework.decorators import action
-from .pagination import ReviewsPagination, UsersPagination
-from .permissions import (IsAdminRole, IsAuthorIsAllRoles, IsAnyIsAdmin,
-                          IsAuthorActionsOrReadOnly, IsModeratorRole,
-                          IsUserRole, IsUserEditOnlyPermission,
-                          IsAuthorActionOrAdminOrModeratorOrReadOnly)                        
 from rest_framework_simplejwt.tokens import AccessToken
+
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .permissions import (IsAdminRole, IsAnyIsAdmin,
+                          IsUserEditOnlyPermission,
+                          IsAuthorActionOrAdminOrModeratorOrReadOnly)
 
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
                           TokenSerializer, UserRegistrationSerializer,
-                          UserSerializer, NotAdminSerializer)
+                          UserSerializer, UserNotAdminSerializer)
+
 from api.filters import TitlesFilter
 from api.mixins import CreateListDestroyViewSet
 from reviews.models import Category, Genre, Review, Title
@@ -34,10 +29,10 @@ from users.models import User
 
 
 class UserViewSet(ModelViewSet):
+    """Получение списка пользователей. Доступ Админ."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminRole,)
-    pagination_class = UsersPagination
     filter_backends = (SearchFilter,)
     search_fields = ('username', )
 
@@ -58,13 +53,16 @@ class UserViewSet(ModelViewSet):
         user = get_object_or_404(
             User, username=request.user
         )
-        serializer = NotAdminSerializer(user, data=request.data, partial=True)
+        serializer = UserNotAdminSerializer(
+            user, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=HTTP_200_OK)
 
 
 class UserCreateView(APIView):
+    """Создание пользователя."""
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -75,6 +73,7 @@ class UserCreateView(APIView):
 
 
 class TokenCreateView(APIView):
+    """Получение токена."""
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -103,7 +102,7 @@ class TokenCreateView(APIView):
 
 
 class GenreViewSet(CreateListDestroyViewSet):
-    """Получить список всех жанров. Доступно без токена"""
+    """Получить список всех жанров. Доступно без токена."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAnyIsAdmin,)
@@ -113,7 +112,7 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
-    """Получить список всех категорий. Доступно без токена"""
+    """Получить список всех категорий. Доступно без токена."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAnyIsAdmin, )
@@ -123,6 +122,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Получить список всех произведений. Доступно без токена."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAnyIsAdmin,)
@@ -136,8 +136,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Получение списка всех отзывов. Доступно без токена."""
     serializer_class = ReviewSerializer
-
     permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
 
     def get_queryset(self):
@@ -158,6 +158,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Получение списка всех комментариев. Доступно без токена."""
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
 
