@@ -114,7 +114,7 @@ class CategoryViewSet(CreateListDestroyViewSet):
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
-    pagination_class = ReviewsPagination
+    pagination_class = PageNumberPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -123,6 +123,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAnyIsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
+    pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
         if self.action == 'list' or 'retrieve':
