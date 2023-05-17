@@ -187,14 +187,16 @@ class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
-        return int(round(
-            obj.reviews.all().aggregate(Avg('score'))['score__avg']
-        ))
+        if obj.reviews.all():
+            return int(round(
+                obj.reviews.all().aggregate(Avg('score'))['score__avg']
+            ))
+        return None
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
+    genre = GenreSerializer(read_only=True, many=True)
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Title
@@ -204,9 +206,11 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
-        return int(round(
-            obj.reviews.all().aggregate(Avg('score'))['score__avg']
-        ))
+        if obj.reviews.all():
+            return int(round(
+                obj.reviews.all().aggregate(Avg('score'))['score__avg']
+            ))
+        return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -217,7 +221,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate_score(self, value):
-        if not (1 < value < 10):
+        if not (1 <= value <= 10):
             raise serializers.ValidationError(
                 'Введите число рейтинга от 1 до 10!'
             )
@@ -228,5 +232,5 @@ class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(read_only=True, slug_field='username')
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date',)
         model = Comment

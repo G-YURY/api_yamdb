@@ -15,11 +15,15 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+
+from rest_framework.decorators import action
+from .pagination import ReviewsPagination, UsersPagination
+from .permissions import (IsAdminRole, IsAuthorIsAllRoles, IsAnyIsAdmin,
+                          IsAuthorActionsOrReadOnly, IsModeratorRole,
+                          IsUserRole,
+                          IsAuthorActionOrAdminOrModeratorOrReadOnly)                        
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .pagination import ReviewsPagination, UsersPagination
-from .permissions import (IsAdminRole, IsAnyIsAdmin, IsAuthorActionsOrReadOnly,
-                          IsAuthorIsAllRoles, IsModeratorRole, IsUserRole)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
@@ -44,7 +48,6 @@ class UserMeViewSet(RetrieveDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = 'username'
-
     # def get_object(self):
     #     print('********************')
     #     # queryset = self.get_queryset()
@@ -112,26 +115,25 @@ class CategoryViewSet(CreateListDestroyViewSet):
     filter_backends = (SearchFilter, )
     search_fields = ('name', )
     lookup_field = 'slug'
-    pagination_class = ReviewsPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(Avg('reviews__score'))
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAnyIsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrieve':
-            return TitleReadSerializer
-        return TitleSerializer
+        if self.action in ('create', 'partial_update',):
+            return TitleSerializer
+        return TitleReadSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    pagination_class = ReviewsPagination
-    permission_classes = (IsAuthorActionsOrReadOnly,)
+
+    permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -139,17 +141,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        print(self.request.method)
         title_id = self.kwargs.get('title_id')
-        serializer.save(author=self.request.user,
-                        title=get_object_or_404(Title, pk=title_id)
-                        )
+        title = get_object_or_404(Title, pk=title_id)
+        review = title.reviews.filter(author=self.request.user)
+        review_count = review.count()
+        if review_count > 0:
+            raise ValidationError('Нельза оставить больше одного отзыва')
+        else:
+            serializer.save(author=self.request.user,
+                            title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    pagination_class = ReviewsPagination
-    permission_classes = (IsAuthorActionsOrReadOnly,)
+    permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
