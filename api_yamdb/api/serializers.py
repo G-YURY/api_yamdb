@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email',
+            'username', 'email',
             'first_name', 'last_name',
             'bio', 'role',
         )
@@ -74,6 +74,11 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Длина строки не может быть больше 254 символов.'
             )
+        return value
+
+    def validate_role(self, value):
+        if value not in ('admin', 'user', 'moderator'):
+            raise serializers.ValidationError('выбрана не существующая роль')
         return value
 
 
@@ -234,3 +239,13 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date',)
         model = Comment
+
+
+class NotAdminSerializer(serializers.ModelSerializer):
+    """Сериализатор для пользователя с ролью 'user'."""
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)

@@ -1,5 +1,3 @@
-import re
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -15,12 +13,12 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.decorators import action
 from .pagination import ReviewsPagination, UsersPagination
 from .permissions import (IsAdminRole, IsAuthorIsAllRoles, IsAnyIsAdmin,
                           IsAuthorActionsOrReadOnly, IsModeratorRole,
-                          IsUserRole,
+                          IsUserRole, IsUserEditOnlyPermission,
                           IsAuthorActionOrAdminOrModeratorOrReadOnly)                        
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -28,7 +26,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
                           TokenSerializer, UserRegistrationSerializer,
-                          UserSerializer)
+                          UserSerializer, NotAdminSerializer)
 from api.filters import TitlesFilter
 from api.mixins import CreateListDestroyViewSet
 from reviews.models import Category, Genre, Review, Title
@@ -39,24 +37,28 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminRole,)
-    pagination_class = UsersPagination
     lookup_field = 'username'
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
+    @action(
+        methods=['get', 'patch'], detail=False,
+        permission_classes=(IsUserEditOnlyPermission,)
+    )
+    def me(self, request):
+        if request.method == 'GET':
+            user = get_object_or_404(
+                User, username=request.user
+            )
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
 
-class UserMeViewSet(RetrieveDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
-    lookup_field = 'username'
-    # def get_object(self):
-    #     print('********************')
-    #     # queryset = self.get_queryset()
-    #     # filter = {}
-    #     # for field in self.multiple_lookup_fields:
-    #     #     filter[field] = self.kwargs[field]
-    #     obj = self.request.user
-    #     # self.check_object_permissions(self.request, obj)
-    #     return obj
+        user = get_object_or_404(
+            User, username=request.user
+        )
+        serializer = NotAdminSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=HTTP_200_OK)
 
 
 class UserCreateView(APIView):
