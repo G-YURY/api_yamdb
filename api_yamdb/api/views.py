@@ -51,8 +51,7 @@ class UserViewSet(ModelViewSet):
     def me(self, request):
         if request.method == 'GET':
             user = get_object_or_404(
-                User, username=request.user
-            )
+                User, username=request.user)
             serializer = self.get_serializer(user)
             return Response(serializer.data)
 
