@@ -1,26 +1,26 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Avg
+import re
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.db.models import Avg
+from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import AccessToken
+
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
-
-from rest_framework.relations import SlugRelatedField
-
-from reviews.models import Review, Comment
-
-from reviews.models import Category, Genre, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # password = serializers.HiddenField(default='system')
     username = serializers.CharField(
         max_length=150,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
@@ -32,42 +32,129 @@ class UserSerializer(serializers.ModelSerializer):
             'bio', 'role',
         )
 
+    def validate_first_name(self, value):
+        """ Проверить string <first_name> <= 150 characters.
+        """
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 150 символов.'
+            )
+        return value
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    """ Сериализация регистрации пользователя и создания нового. """
-    password = serializers.HiddenField(default='system', required=False)
-    username = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
+    def validate_last_name(self, value):
+        """ Проверить string <last_name> <= 150 characters.
+        """
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 150 символов.'
+            )
+        return value
+
+    def validate_username(self, value):
+        """ Проверить string <username>.
+        """
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 150 символов.'
+            )
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise serializers.ValidationError(
+                'Строка содержит недопустимые символы.'
+            )
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Значение поля не может быть `me`.'
+            )
+        return value
+
+    def validate_email(self, value):
+        """ Проверить string <email> <= 254 characters.
+        """
+        if len(value) > 254:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 254 символов.'
+            )
+        return value
+
+
+class UserRegistrationSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password',)
+        fields = ('email', 'username', )
+
+    def create(self, validated_data):
+        is_email = is_username = False
+        if User.objects.filter(username=validated_data['username']).exists():
+            is_username = True
+        if User.objects.filter(email=validated_data['email']).exists():
+            is_email = True
+
+        if not is_email == is_username:
+            message = {'<email> & <username>': 'Поля должны быть уникальными.'}
+            raise ValidationError(message)
+
+        confirmation_code = get_random_string(
+            length=5, allowed_chars='0123456789')
+        validated_data['confirmation_code'] = confirmation_code
+        user, created = User.objects.update_or_create(
+            username=validated_data['username'],
+            defaults=validated_data
+        )
+        send_mail(
+            'Your confirmation code',
+            confirmation_code, 'admin@yamdb.ru', [validated_data['email'], ],)
+        return user
+
+    def validate_username(self, value):
+        """ Проверить string <username>.
+        """
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 150 символов.'
+            )
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise serializers.ValidationError(
+                'Строка содержит недопустимые символы.'
+            )
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Значение поля не может быть `me`.'
+            )
+        return value
+
+    def validate_email(self, value):
+        """ Проверить string <email> <= 254 characters.
+        """
+        if len(value) > 254:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 254 символов.'
+            )
+        return value
 
 
 class TokenSerializer(serializers.Serializer):
-    token = serializers.SerializerMethodField()
+    confirmation_code = serializers.CharField(required=True)
+    username = serializers.CharField(required=True)
 
-    def create(self, validated_data):
-        _username = self.initial_data['username']
-        try:
-            _user = User.objects.get(username=_username)
-        except ObjectDoesNotExist:
-            _user = None
-
-        if not _user:
-            message = {f'{_username}': 'Пользователь не найден.'}
-            raise NotFound(message)
-
-        _code = self.initial_data['confirmation_code']
-        if not _user.code == _code:
-            message = {'confirmation_code': f'{_code} — код не корректен.'}
-            raise ValidationError(message)
-        _user.code = None
-        _token = AccessToken().for_user(_user)
-        return _token
-
-    def get_token(self, obj):
-        return str(self.instance)
+    def validate_username(self, value):
+        """ Проверить string <username>.
+        """
+        if len(value) > 150:
+            raise serializers.ValidationError(
+                'Длина строки не может быть больше 150 символов.'
+            )
+        if not re.match(r'^[\w.@+-]+\Z', value):
+            raise serializers.ValidationError(
+                'Строка содержит недопустимые символы.'
+            )
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Значение поля не может быть `me`.'
+            )
+        return value
 
 
 class GenreSerializer(serializers.ModelSerializer):

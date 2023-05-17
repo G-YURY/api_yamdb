@@ -3,7 +3,9 @@ from django.db import models
 
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True, blank=True)
+    email = models.EmailField(
+        'E-mail', max_length=254, unique=True, blank=True)
     role = models.CharField('Роль', max_length=10, blank=True)
     bio = models.TextField('Биография', blank=True)
-    code = models.CharField('Код подтверждения', max_length=10, blank=True)
+    confirmation_code = models.CharField(
+        'Код подтверждения', max_length=10, blank=True)
