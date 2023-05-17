@@ -6,8 +6,8 @@ POST http://127.0.0.1:8000/api/v1/auth/signup/
 Content-Type: application/json
 
 {
-  "email": "c6_ob@yamdb.fake",
-  "username": "c6"
+  "email": "capt_obvious@yamdb.fake",
+  "username": "capt_obvious"
 }
 
 ### ------------------------------------------------------------------------
@@ -18,11 +18,12 @@ POST http://127.0.0.1:8000/api/v1/auth/token/
 Content-Type: application/json
 
 {
-  "username": "c1226",
-  "confirmation_code": "69783"
+  "username": "capt_obvious",
+  "confirmation_code": "97837"
 }
 
-#eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTEwNzIxLCJpYXQiOjE2ODQyNDY3MjEsImp0aSI6IjUxMmQzZjYwMmRlZTQ0ZGJhZjY1OTNlNDU4OTg1M2JmIiwidXNlcl9pZCI6MTAxfQ.I5_sj_rAzot9E7oLxOcCXmnirkadi5gsINNkp6sroT0
+# "username": "capt_obvious",
+# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTY4ODk2LCJpYXQiOjE2ODQzMDQ4OTYsImp0aSI6ImZlOTg4MmUzYjY3NzQ4MzI5Nzk0NjJmY2UzMmRiYzBhIiwidXNlcl9pZCI6MTAxfQ.30Q6HAZgBE9t1wDq1lKu8S1J6eYEj-tALIHRWfjMHYo
 
 ### ========================================================================
 ### /api/v1/categories/
@@ -268,7 +269,13 @@ Content-Type: application/json
 ### Получить список всех пользователей. Права доступа: ——— Администратор ———
 GET http://127.0.0.1:8000/api/v1/users/
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MDk5ODE0LCJpYXQiOjE2ODQyMzU4MTQsImp0aSI6IjZmYmU3MWQ5YzhkNTQ0NGU5YjQ1ZTk2ODNkMTgwZDExIiwidXNlcl9pZCI6MTAyfQ.JATbrbOXqmlOIVRSTmtT005XTNEPO7R6Iy2zU_R_-cE
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTY4ODk2LCJpYXQiOjE2ODQzMDQ4OTYsImp0aSI6ImZlOTg4MmUzYjY3NzQ4MzI5Nzk0NjJmY2UzMmRiYzBhIiwidXNlcl9pZCI6MTAxfQ.30Q6HAZgBE9t1wDq1lKu8S1J6eYEj-tALIHRWfjMHYo
+
+### ------------------------------------------------------------------------
+### Поиск по полю <username>   api/v1/users/?search={<username>}
+GET http://127.0.0.1:8000/api/v1/users/?search=bingobongo
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjg1MTY4ODk2LCJpYXQiOjE2ODQzMDQ4OTYsImp0aSI6ImZlOTg4MmUzYjY3NzQ4MzI5Nzk0NjJmY2UzMmRiYzBhIiwidXNlcl9pZCI6MTAxfQ.30Q6HAZgBE9t1wDq1lKu8S1J6eYEj-tALIHRWfjMHYo
 
 ### ------------------------------------------------------------------------
 ### /api/v1/users/                            —>     jwt-token (write:admin)
