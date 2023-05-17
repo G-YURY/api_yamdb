@@ -81,13 +81,13 @@ class Title(models.Model):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User, 
+        User,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Произведение'
     )
     title = models.ForeignKey(
-        Title, 
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Автор отзыва'

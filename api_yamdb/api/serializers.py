@@ -1,14 +1,13 @@
 import re
 
-from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueValidator
+
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.utils.crypto import get_random_string
-from rest_framework import serializers
-from rest_framework.exceptions import NotFound, ValidationError
-from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
@@ -33,7 +32,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_first_name(self, value):
-        """ Проверить string <first_name> <= 150 characters.
+        """
+        Проверить string <first_name> <= 150 characters.
         """
         if len(value) > 150:
             raise serializers.ValidationError(
@@ -42,7 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_last_name(self, value):
-        """ Проверить string <last_name> <= 150 characters.
+        """
+        Проверить string <last_name> <= 150 characters.
         """
         if len(value) > 150:
             raise serializers.ValidationError(
@@ -51,7 +52,8 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
-        """ Проверить string <username>.
+        """
+        Проверить string <username>.
         """
         if len(value) > 150:
             raise serializers.ValidationError(
@@ -68,7 +70,8 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_email(self, value):
-        """ Проверить string <email> <= 254 characters.
+        """
+        Проверить string <email> <= 254 characters.
         """
         if len(value) > 254:
             raise serializers.ValidationError(
@@ -77,9 +80,21 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_role(self, value):
+        """
+        Проверить корректное поле role.
+        """
         if value not in ('admin', 'user', 'moderator'):
             raise serializers.ValidationError('выбрана не существующая роль')
         return value
+
+
+class UserNotAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)
 
 
 class UserRegistrationSerializer(serializers.Serializer):
@@ -192,6 +207,7 @@ class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
+        """Получение среднего рейтинга."""
         if obj.reviews.all():
             return int(round(
                 obj.reviews.all().aggregate(Avg('score'))['score__avg']
@@ -211,6 +227,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
+        """Получение среднего рейтинга."""
         if obj.reviews.all():
             return int(round(
                 obj.reviews.all().aggregate(Avg('score'))['score__avg']
@@ -226,6 +243,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate_score(self, value):
+        """Проверка значения поля от 1 до 10."""
         if not (1 <= value <= 10):
             raise serializers.ValidationError(
                 'Введите число рейтинга от 1 до 10!'
@@ -239,13 +257,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date',)
         model = Comment
-
-
-class NotAdminSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователя с ролью 'user'."""
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
-        read_only_fields = ('role',)
