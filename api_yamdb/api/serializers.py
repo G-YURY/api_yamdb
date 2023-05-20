@@ -1,13 +1,9 @@
-import re
-
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-
-from django.core.mail import send_mail
-from django.db.models import Avg
-from django.utils.crypto import get_random_string
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
@@ -16,12 +12,20 @@ from users.models import User
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
+        validators=[UnicodeUsernameValidator(),
+                    UniqueValidator(queryset=User.objects.all())])
     email = serializers.EmailField(
         max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
+        validators=[UniqueValidator(queryset=User.objects.all())])
+    # )    username = serializers.CharField(
+    #     max_length=150,
+    #     required=True,
+    #     validators=[UnicodeUsernameValidator(), ]
+    # )
+    # email = serializers.EmailField(
+    #     max_length=254,
+    #     required=True,
+    # )
 
     class Meta:
         model = User
@@ -31,64 +35,18 @@ class UserSerializer(serializers.ModelSerializer):
             'bio', 'role',
         )
 
-    def validate_first_name(self, value):
-        """
-        Проверить string <first_name> <= 150 characters.
-        """
-        if len(value) > 150:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 150 символов.'
-            )
-        return value
-
-    def validate_last_name(self, value):
-        """
-        Проверить string <last_name> <= 150 characters.
-        """
-        if len(value) > 150:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 150 символов.'
-            )
-        return value
-
-    def validate_username(self, value):
-        """
-        Проверить string <username>.
-        """
-        if len(value) > 150:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 150 символов.'
-            )
-        if not re.match(r'^[\w.@+-]+\Z', value):
-            raise serializers.ValidationError(
-                'Строка содержит недопустимые символы.'
-            )
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Значение поля не может быть `me`.'
-            )
-        return value
-
-    def validate_email(self, value):
-        """
-        Проверить string <email> <= 254 characters.
-        """
-        if len(value) > 254:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 254 символов.'
-            )
-        return value
-
-    def validate_role(self, value):
-        """
-        Проверить корректное поле role.
-        """
-        if value not in ('admin', 'user', 'moderator'):
-            raise serializers.ValidationError('выбрана не существующая роль')
-        return value
-
 
 class UserNotAdminSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[UnicodeUsernameValidator(), ]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+        required=True,
+    )
+
     class Meta:
         model = User
         fields = (
@@ -97,84 +55,41 @@ class UserNotAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-class UserRegistrationSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
-
-    class Meta:
-        model = User
-        fields = ('email', 'username', )
-
-    def create(self, validated_data):
-        is_email = is_username = False
-        if User.objects.filter(username=validated_data['username']).exists():
-            is_username = True
-        if User.objects.filter(email=validated_data['email']).exists():
-            is_email = True
-
-        if not is_email == is_username:
-            message = {'<email> & <username>': 'Поля должны быть уникальными.'}
-            raise ValidationError(message)
-
-        confirmation_code = get_random_string(
-            length=5, allowed_chars='0123456789')
-        validated_data['confirmation_code'] = confirmation_code
-        user, created = User.objects.update_or_create(
-            username=validated_data['username'],
-            defaults=validated_data
-        )
-        send_mail(
-            'Your confirmation code',
-            confirmation_code, 'admin@yamdb.ru', [validated_data['email'], ],)
-        return user
+class SignUpSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        max_length=254,
+        required=True,
+    )
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[UnicodeUsernameValidator(), ]
+    )
 
     def validate_username(self, value):
-        """ Проверить string <username>.
+        """ Проверить значение поля <username>.
         """
-        if len(value) > 150:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 150 символов.'
-            )
-        if not re.match(r'^[\w.@+-]+\Z', value):
-            raise serializers.ValidationError(
-                'Строка содержит недопустимые символы.'
-            )
         if value == 'me':
             raise serializers.ValidationError(
                 'Значение поля не может быть `me`.'
             )
         return value
 
-    def validate_email(self, value):
-        """ Проверить string <email> <= 254 characters.
+    def validate(self, attrs):
+        """ Проверяем, существует ли пользователь с данным адресом электронной
+            почты или именем пользователя
         """
-        if len(value) > 254:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 254 символов.'
+        email, username = attrs.get('email', None), attrs.get('username', None)
+        if email is None or username is None:
+            raise ValidationError(
+                'Нужно указать адрес электронной почты и имя пользователя.'
             )
-        return value
+        return attrs
 
 
 class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
     username = serializers.CharField(required=True)
-
-    def validate_username(self, value):
-        """ Проверить string <username>.
-        """
-        if len(value) > 150:
-            raise serializers.ValidationError(
-                'Длина строки не может быть больше 150 символов.'
-            )
-        if not re.match(r'^[\w.@+-]+\Z', value):
-            raise serializers.ValidationError(
-                'Строка содержит недопустимые символы.'
-            )
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Значение поля не может быть `me`.'
-            )
-        return value
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -182,7 +97,6 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ('name', 'slug')
         lookup_field = 'slug'
-        pass
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -190,7 +104,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('name', 'slug')
         lookup_field = 'slug'
-        pass
 
 
 class TitleSerializer(serializers.ModelSerializer):

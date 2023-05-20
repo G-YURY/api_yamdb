@@ -2,9 +2,15 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import CommentViewSet, ReviewViewSet
-from api.views import (CategoryViewSet, GenreViewSet, TitleViewSet,
-                       TokenCreateView, UserCreateView,
-                       UserViewSet)
+from api.views import CategoryViewSet, GenreViewSet, TitleViewSet, UserViewSet
+from django.urls import path
+
+from api.views import get_token, user_registry
+
+urls_auth = [
+    path('signup/', user_registry, name='signup'),
+    path('token/', get_token, name='token'),
+]
 
 router_v1 = routers.DefaultRouter()
 
@@ -25,17 +31,7 @@ router_v1.register(
     basename='comments'
 )
 
-
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    path(
-        'v1/auth/token/',
-        TokenCreateView.as_view(),
-        name='token'
-    ),
-    path(
-        'v1/auth/signup/',
-        UserCreateView.as_view(),
-        name='signup'
-    ),
+    path('v1/auth/', include(urls_auth)),
 ]

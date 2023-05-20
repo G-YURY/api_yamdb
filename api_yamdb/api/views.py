@@ -1,27 +1,25 @@
-from rest_framework import status, viewsets
-from rest_framework.exceptions import NotFound, ValidationError
-from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.status import HTTP_200_OK
-from rest_framework.decorators import action
-from rest_framework_simplejwt.tokens import AccessToken
-
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import AccessToken
+from django.core.mail import send_mail
 
 from .permissions import (IsAdminRole, IsAnyIsAdmin,
-                          IsUserEditOnlyPermission,
-                          IsAuthorActionOrAdminOrModeratorOrReadOnly)
-
+                          IsAuthorActionOrAdminOrModeratorOrReadOnly,
+                          IsUserEditOnlyPermission)
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer,
+                          GenreSerializer, ReviewSerializer, SignUpSerializer,
                           TitleReadSerializer, TitleSerializer,
-                          TokenSerializer, UserRegistrationSerializer,
-                          UserSerializer, UserNotAdminSerializer)
-
+                          TokenSerializer, UserNotAdminSerializer,
+                          UserSerializer)
 from api.filters import TitlesFilter
 from api.mixins import CreateListDestroyViewSet
 from reviews.models import Category, Genre, Review, Title
@@ -41,7 +39,7 @@ class UserViewSet(ModelViewSet):
 
     @action(
         methods=['get', 'patch'], detail=False,
-        permission_classes=(IsUserEditOnlyPermission,)
+        permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
         if request.method == 'GET':
@@ -61,44 +59,46 @@ class UserViewSet(ModelViewSet):
         return Response(serializer.data, status=HTTP_200_OK)
 
 
-class UserCreateView(APIView):
-    """Создание пользователя."""
-    permission_classes = (AllowAny,)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def user_registry(request):
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    is_email = is_username = False
+    if User.objects.filter(username=serializer.data['username']).exists():
+        is_username = True
+    if User.objects.filter(email=serializer.data['email']).exists():
+        is_email = True
 
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    if not is_email == is_username:
+        message = {'<email> & <username>': 'Поля должны быть уникальными.'}
+        raise ValidationError(message)
+        
+    user, created = User.objects.update_or_create(
+        username=serializer.data['username'], defaults=serializer.data)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        'Your confirmation code',
+        confirmation_code, 'admin@yamdb.ru', [serializer.data['email'], ],)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TokenCreateView(APIView):
-    """Получение токена."""
-    permission_classes = (AllowAny,)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    print(serializer.data)
+    user = get_object_or_404(
+        User, username=serializer.data['username']
+    )
+    code = serializer.data['confirmation_code']
+    if not default_token_generator.check_token(user, code):
+        raise ValidationError(
+            {'confirmation_code': f'{code} — код не актуален.'})
+    token = str(AccessToken().for_user(user))
 
-    def post(self, request):
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        _username = serializer.data['username']
-        if not User.objects.filter(username=_username).exists():
-            raise NotFound('Такого значения поля в базе данных нет.')
-
-        _user = User.objects.get(username=_username)
-
-        _code = serializer.data['confirmation_code']
-        if not _user.confirmation_code == _code:
-            message = {'confirmation_code': f'{_code} — код не актуален.'}
-            raise ValidationError(message)
-        if _user.role:
-            _role = _user.role
-        else:
-            _role = 'user'
-        User.objects.filter(
-            username=_username).update(role=_role, confirmation_code='')
-        _token = str(AccessToken().for_user(_user))
-
-        return Response({'token': _token}, status=status.HTTP_200_OK)
+    return Response({'token': token}, status=status.HTTP_200_OK)
 
 
 class GenreViewSet(CreateListDestroyViewSet):

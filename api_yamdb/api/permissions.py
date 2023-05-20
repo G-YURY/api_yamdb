@@ -6,15 +6,15 @@ class IsAdminRole(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_anonymous:
             return False
-        return (request.user.is_admin or request.user.is_superuser)
+        return bool(request.user.is_admin_role)
 
 
 class IsAnyIsAdmin(permissions.BasePermission):
     """Доступ только админу, но просмотр для всех."""
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return (request.user.is_admin or request.user.is_superuser)
-        return request.method in permissions.SAFE_METHODS
+        return bool((request.method in permissions.SAFE_METHODS)
+                    or (request.user.is_authenticated
+                    and request.user.is_admin_role))
 
 
 class IsAuthorActionOrAdminOrModeratorOrReadOnly(permissions.BasePermission):
@@ -28,8 +28,8 @@ class IsAuthorActionOrAdminOrModeratorOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return (request.method in permissions.SAFE_METHODS
-                or obj.author == request.user or request.user.is_moderator
-                or request.user.is_admin or request.user.is_superuser
+                or obj.author == request.user or request.user.is_moderator_role
+                or request.user.is_admin_role
                 )
 
 
