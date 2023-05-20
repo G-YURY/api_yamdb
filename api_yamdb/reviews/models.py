@@ -49,8 +49,8 @@ class Title(models.Model):
         verbose_name='Название произведения',
         max_length=MAX_LENGTH_FOR_CHAR_FIELD
     )
-    year = models.IntegerField(
-        verbose_name='Дата выхода',
+    year = models.SmallIntegerField(
+        verbose_name='Год выхода',
         validators=[validate_year],
         db_index=True,
     )

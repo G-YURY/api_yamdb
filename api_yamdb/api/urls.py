@@ -3,8 +3,7 @@ from rest_framework import routers
 
 from .views import CommentViewSet, ReviewViewSet
 from api.views import (CategoryViewSet, GenreViewSet, TitleViewSet,
-                       TokenCreateView, UserCreateView,
-                       UserViewSet)
+                       UserViewSet, get_token, user_registry_signup)
 
 router_v1 = routers.DefaultRouter()
 
@@ -26,8 +25,8 @@ router_v1.register(
 )
 
 auth_urls = [
-    path('token/', TokenCreateView, name='token'),
-    path('signup/', UserCreateView, name='signup')
+    path('signup/', user_registry_signup, name='signup'),
+    path('token/', get_token, name='token'),
 ]
 
 urlpatterns = [

@@ -1,19 +1,20 @@
-from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework import viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.viewsets import ModelViewSet
 
 from .permissions import (IsAdminRole, IsAnyIsAdmin,
                           IsAuthorActionOrAdminOrModeratorOrReadOnly)
-
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer,
@@ -22,9 +23,9 @@ from .serializers import (CategorySerializer, CommentSerializer,
 
 from api.filters import TitlesFilter
 from api.mixins import CreateListDestroyViewSet
+from api_yamdb.settings import HOST_EMAIL
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from api_yamdb.settings import HOST_EMAIL
 
 
 class UserViewSet(ModelViewSet):
@@ -61,45 +62,45 @@ class UserViewSet(ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def UserCreateView(request):
+def user_registry_signup(request):
     """Регистрация пользователя."""
     serializer = SignUpSerializer(data=request.data)
-    if (User.objects.filter(username=request.data.get('username'),
-                            email=request.data.get('email'))):
-        user = User.objects.get(username=request.data.get('username'))
-        serializer = SignUpSerializer(user, data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = User.objects.get(username=request.data.get('username'))
-    send_mail(subject="Код доступа",
-              message=f'Your confirmation code {user.confirmation_code}',
+    is_email = is_username = False
+    if User.objects.filter(username=serializer.data['username']).exists():
+        is_username = True
+    if User.objects.filter(email=serializer.data['email']).exists():
+        is_email = True
+
+    if not is_email == is_username:
+        message = {'<email> & <username>': 'Поля должны быть уникальными.'}
+        raise ValidationError(message)
+        
+    user, created = User.objects.update_or_create(
+        username=serializer.data['username'], defaults=serializer.data)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(subject='Код доступа',
+              message=f'Your confirmation code {confirmation_code}',
               from_email=HOST_EMAIL,
-              recipient_list=[request.data.get('email')])
-    return Response(
-        serializer.data, status=HTTP_200_OK
-    )
+              recipient_list=[serializer.data.get('email')])
+    return Response(serializer.data, status=HTTP_200_OK)
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def TokenCreateView(request):
+def get_token(request):
     """Получение токена."""
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
-        User, username=request.data.get('username')
-    )
-    if str(user.confirmation_code) == request.data.get(
-            'confirmation_code'):
-        refresh = RefreshToken.for_user(user)
-        token = {'token': str(refresh.access_token)}
-        return Response(
-            token, status=HTTP_200_OK
-        )
-    return Response(
-        {'confirmation_code': 'Неверный код подтверждения.'},
-        status=HTTP_400_BAD_REQUEST
-    )
+        User, username=serializer.data.get('username'))
+    code = serializer.data['confirmation_code']
+    if not default_token_generator.check_token(user, code):
+        raise ValidationError(
+            {'confirmation_code': f'{code} — код не актуален.'})
+    token = str(AccessToken().for_user(user))
+
+    return Response({'token': token}, status=HTTP_200_OK)
 
 
 class AdminOrReadyViewSet(CreateListDestroyViewSet):
@@ -128,6 +129,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAnyIsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitlesFilter
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
         if self.action in ('create', 'partial_update',):
@@ -158,10 +160,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
+    def get_review(self, review_id, title_id):
+        review = get_object_or_404(Review, id=review_id, title_id=title_id)
+        return review
+
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id, title_id=title_id)
+        review = self.get_review(review_id, title_id)
         return review.comments.all()
 
     def perform_create(self, serializer):
@@ -169,5 +175,5 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         serializer.save(
             author=self.request.user,
-            review=get_object_or_404(Review, id=review_id, title_id=title_id)
+            review=self.get_review(review_id, title_id)
         )
