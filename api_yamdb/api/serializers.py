@@ -207,6 +207,9 @@ class TitleSerializer(serializers.ModelSerializer):
 
     rating = serializers.SerializerMethodField()
 
+    def to_representation(self, instance):
+        return TitleReadSerializer(instance).data
+
     def get_rating(self, obj):
         """Получение среднего рейтинга."""
         if obj.reviews.all():
