@@ -72,6 +72,19 @@ class TitleSerializer(serializers.ModelSerializer):
                   'description',
                   'genre', 'category')
 
+    rating = serializers.SerializerMethodField()
+
+    def to_representation(self, instance):
+        return TitleReadSerializer(instance).data
+
+    def get_rating(self, obj):
+        """Получение среднего рейтинга."""
+        if obj.reviews.all():
+            return int(round(
+                obj.reviews.all().aggregate(Avg('score'))['score__avg']
+            ))
+        return None
+
 
 class TitleReadSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
