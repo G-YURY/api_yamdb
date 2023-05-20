@@ -75,7 +75,7 @@ def user_registry_signup(request):
     if not is_email == is_username:
         message = {'<email> & <username>': 'Поля должны быть уникальными.'}
         raise ValidationError(message)
-        
+
     user, created = User.objects.update_or_create(
         username=serializer.data['username'], defaults=serializer.data)
     confirmation_code = default_token_generator.make_token(user)
