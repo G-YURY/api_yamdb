@@ -22,7 +22,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           UserSerializer, UserNotAdminSerializer)
 
 from api.filters import TitlesFilter
-from api.mixins import CreateListDestroyViewSet
+from api.viewsets import AdminOrReadyViewSet
 from api_yamdb.settings import HOST_EMAIL
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
@@ -66,17 +66,16 @@ def user_registry_signup(request):
     """Регистрация пользователя."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    is_email = is_username = False
-    if User.objects.filter(username=serializer.data['username']).exists():
-        is_username = True
-    if User.objects.filter(email=serializer.data['email']).exists():
-        is_email = True
+    user_by_username = User.objects.filter(
+        username=serializer.data['username']).first()
+    user_by_email = User.objects.filter(email=serializer.data['email']).first()
 
-    if not is_email == is_username:
-        message = {'<email> & <username>': 'Поля должны быть уникальными.'}
+    if not user_by_username == user_by_email:
+        field_name = 'email' if user_by_email else 'username'
+        message = {f'{field_name}': 'Поле должно быть уникальным.'}
         raise ValidationError(message)
 
-    user, created = User.objects.update_or_create(
+    user, _ = User.objects.update_or_create(
         username=serializer.data['username'], defaults=serializer.data)
     confirmation_code = default_token_generator.make_token(user)
     send_mail(subject='Код доступа',
@@ -101,14 +100,6 @@ def get_token(request):
     token = str(AccessToken().for_user(user))
 
     return Response({'token': token}, status=HTTP_200_OK)
-
-
-class AdminOrReadyViewSet(CreateListDestroyViewSet):
-    """Кастомный вьюсет для Genre и Category."""
-    permission_classes = (IsAnyIsAdmin,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name', )
-    lookup_field = 'slug'
 
 
 class GenreViewSet(AdminOrReadyViewSet):
@@ -160,20 +151,18 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorActionOrAdminOrModeratorOrReadOnly,)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
-    def get_review(self, review_id, title_id):
+    def get_review(self):
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id, title_id=title_id)
         return review
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        review_id = self.kwargs.get('review_id')
-        review = self.get_review(review_id, title_id)
+        review = self.get_review()
         return review.comments.all()
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        review_id = self.kwargs.get('review_id')
         serializer.save(
             author=self.request.user,
-            review=self.get_review(review_id, title_id)
+            review=self.get_review()
         )
