@@ -3,34 +3,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        validators=[UnicodeUsernameValidator(),
-                    UniqueValidator(queryset=User.objects.all())]
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role', )
-
-    def validate_role(self, value):
-        """Проверить корректное поле role.
-        """
-        if value not in ('admin', 'user', 'moderator'):
-            raise serializers.ValidationError('Значение поля недопустимо.')
-        return value
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -52,17 +35,6 @@ class SignUpSerializer(serializers.Serializer):
                 'Значение поля не может быть `me`.'
             )
         return value
-
-    def validate(self, attrs):
-        """ Проверяем, существует ли пользователь с данным адресом электронной
-            почты или именем пользователя
-        """
-        email, username = attrs.get('email', None), attrs.get('username', None)
-        if email is None or username is None:
-            raise ValidationError(
-                'Нужно указать адрес электронной почты и имя пользователя.'
-            )
-        return attrs
 
 
 class UserNotAdminSerializer(serializers.ModelSerializer):
@@ -131,12 +103,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Проверка на оставление одного отзыва."""
         request = self.context['request']
-        if request.method == 'POST':
-            author = request.user
-            title_id = self.context.get('view').kwargs.get('title_id')
-            title = get_object_or_404(Title, pk=title_id)
-            if Review.objects.filter(title=title, author=author).exists():
-                raise ValidationError('Можно оставить только один отзыв!.')
+        if request.method != 'POST':
+            return data
+        author = request.user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        if Review.objects.filter(title=title, author=author).exists():
+            raise ValidationError('Можно оставить только один отзыв.')
         return data
 
 
